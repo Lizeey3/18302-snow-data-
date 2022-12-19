@@ -1,0 +1,98 @@
+/*1. How many lines does the file contain?*/
+data snow;
+set "C:\Users\14246\Desktop\snowstationsdata.sas7bdat" ; 
+run; 
+%let name= Lizzie Dickson;
+title "&name, &sysday, &sysdate, &systime";
+proc sql number ;
+select* 
+from snow;
+quit;
+
+/* 2. What are the variable names in the imported file? (Hint: use proc 
+contents).*/
+proc contents data= snow._all_ nods;
+run;
+
+/*3. How many different snow stations are the data given for?*/
+proc sql;
+select count (distinct STATIONNAME) as number_of_stations
+from snow;
+quit;
+
+/*4. How many years have been the data recorded for each station?*/
+proc sql number; 
+select distinct STATIONNAME, YEARRECORDBEGAN, YEARRECORDENDS,
+YEARRECORDENDS-YEARRECORDBEGAN as how_many_years
+from snow;
+quit;
+
+/*5. Make an ordered list of years and give the number of stations that had 
+measurements that 
+ year.*/
+proc sql number; 
+select count (distinct STATIONNAME) as count_that_year , YEAR
+from snow
+/*order by YEAR;*/
+group by YEAR;
+quit;
+
+/*6. Compute the highest value of max_SWE for each station. (Note: 
+max_SWE=maximum 
+ annual Snow Water Equivalent). Order by station name.*/
+proc sql number; 
+select MAXSWEinches, STATIONNAME
+from snow
+group by STATIONNAME
+having MAXSWEinches = max(MAXSWEinches)
+order by STATIONNAME;
+quit;
+
+
+/*7. You might have noticed by now that a station name ‘ADIN MOUNTAIN’ had 
+been 
+ misspelled as ‘ADIN MOUTAIN’. Fix this typo.*/
+proc sql; 
+update snow
+set STATIONNAME = 'ADIN MOUNTAIN'
+where STATIONNAME= 'ADIN MOUTAIN';
+select*
+from snow;
+quit; 
+
+/* 8. How many different regions are involved in snow data collection?*/
+proc sql;
+select count (distinct region) as collection_regions
+from snow;
+quit;
+
+/* 9. How many stations are there in each region?*/
+proc sql; 
+select count (distinct STATIONNAME) as num_stations, REGION
+from snow
+group by REGION;
+quit;
+
+
+/** 10. Create a data set that contains variables STATION_ID, STATION_NAME, 
+ TOTAL_MAX_SWE, REGION, ELEVATION, LATITUDE, and LONGITUDE, and 
+ which entries are the snow stations that had been in operation for the 
+most recent 50 
+ years (from 1963 to 2012). That is, you have to take the stations that 
+have records from 
+ 1963 to 2012, and compute the highest max_SWE values (call the 
+TOTAL_MAX_SWE) 
+ over the duration of these 50 years.*/
+data snow;
+set "C:\Users\14246\Desktop\snowstationsdata.sas7bdat" ; 
+run; 
+%let name= Lizzie Dickson;
+title "&name, &sysday, &sysdate, &systime";
+proc sql number; 
+select YEAR, STATIONID, STATIONNAME,MAXSWEinches, 
+REGION,ELEVATIONINFEET,LATITUDE,LONGITUDE
+from snow 
+where YEAR between 1963 and 2012
+group by STATIONNAME
+having MAXSWEinches= max(MAXSWEinches);
+quit;
